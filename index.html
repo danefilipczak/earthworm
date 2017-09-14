@@ -1,0 +1,351 @@
+<html>
+<head>
+ <!--  <link rel="icon" href="resources/treefavicon.ico"> -->
+  <title>earthworm - interactive melodic evolution</title>
+   <script language="javascript" type="text/javascript" src="libraries/bundle667.js"></script>
+  <script language="javascript" type="text/javascript" src="libraries/p5.js"></script>
+    <script language="javascript" type="text/javascript" src="libraries/p5.dom.js"></script>
+
+  
+  <!--<script language="javascript" src="libraries/p5.dom.js"></script>-->
+  
+<script language="javascript" src="libraries/MIDIUtils.js"></script>
+ 
+ <script language="javascript" src="libraries/TinyMusic.js"></script>
+
+  <script language="javascript" src="libraries/p5.soundnew.js"></script>
+   <script language="javascript" src="libraries/p5.gif.js"></script>
+   
+   <script language="javascript" src="libraries/soundfont-player.min.js"></script>
+  
+  
+ 
+
+  <script language="javascript" type="text/javascript" src="population_2.js"></script>
+    <script language="javascript" type="text/javascript" src="vexflow.js"></script>
+
+  <script language="javascript" type="text/javascript" src="face.js"></script>
+  <script language="javascript" type="text/javascript" src="rectangle.js"></script>
+  <script language="javascript" type="text/javascript" src="slider.js"></script>
+   <script language="javascript" type="text/javascript" src="button.js"></script>
+  <script language="javascript" type="text/javascript" src="dna.js"></script>
+  <script language="javascript" type="text/javascript" src="melody_02.js"></script>
+  <script language="javascript" type="text/javascript" src="sketch_02.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+    <meta charset="UTF-8">
+
+    <style>body {
+        background-color: white;
+
+        font-family: Monospace;
+        font-size:14px;
+    }
+
+    #main{
+      position:fixed;
+      z-index:1;
+      padding-left:10px;
+      top:0px;
+      left:61.8%;
+      background-color:grey;
+      height:100%;
+      width:38.2%;
+
+    }
+
+    #controls{
+      background-color:white;
+      padding-left:5px;
+      padding-bottom:10px;
+      padding-top:10px;
+    }
+
+
+    #about{
+      background-color:white;
+      padding-left:5px;
+      padding-bottom:10px;
+      padding-top:10px;
+    }
+
+     #notation{
+     
+      max-height:100%;
+      background-color:white;
+      padding-left:5px;
+      padding-bottom:10px;
+      padding-top:10px;
+      overflow:scroll;
+    }
+
+    
+
+    button {
+    background-color: "white"; /* Green */
+    border: none;
+    text-align: center;
+    text-decoration: none;
+    font-family: monospace;
+    display: inline-block;
+    font-size: 14px;
+  }
+
+  .tablink{
+      background-color:"red";
+
+    }
+  select {
+    font-family: monospace;
+  }
+
+    
+   
+  </style>
+
+  
+  
+</head>
+<body>
+<!--   <h3>by <a href="http://imaginationrock.com/dane">Dane</a></h3><br> -->
+<!-- <h4>Earthworm</h4><h2>is a way of playing with evolution</h2><br><br> -->
+
+<div id = "main">
+
+
+
+
+<div class="w3-bar w3-black">
+
+  <button class="tablink" style = "background:white"onclick="openTab(event, 'controls', 'controlsTab')" id="controlsTab">controls</button>      
+  <button class="tablink" style = "background:grey"onclick="openTab(event, 'about', 'aboutTab')" id = "aboutTab">about</button>
+  <button class="tablink" style = "background:grey"onclick="openTab(event, 'notation', 'notationTab')" id = "notationTab">notation</button>
+</div>
+<script>
+function openTab(evt, cityName, tabName) {
+  var i, x, tablinks;
+  x = document.getElementsByClassName("tab");
+  for (i = 0; i < x.length; i++) {
+      x[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablink");
+  for (i = 0; i < x.length; i++) {
+      tablinks[i].style.background = "grey";
+  }
+  document.getElementById(cityName).style.display = "block";
+  document.getElementById(tabName).style.background = "white";
+
+
+  evt.currentTarget.className += " w3-red";
+}
+</script>
+
+
+<div id = "notation" style = "display:none" class = "tab">
+   <button onClick = "render()">render selected</button><br>
+<div id = "staffPallete"></div>
+</div>
+<script>
+    VF = Vex.Flow;
+function render(){
+
+    VF = Vex.Flow;
+
+    // Create an SVG renderer and attach it to the DIV element named "boo".
+    var context = document.getElementById("staffPallete")
+
+    var div = document.createElement('div');
+    context.insertBefore(div, context.childNodes[0]);
+
+    var text = document.createElement('p');
+    text.innerHTML = "generation " + (population.getGenerations());
+    div.insertBefore(text, div.childNodes[0]);
+
+
+
+
+    var renderer = new VF.Renderer(div, VF.Renderer.Backends.SVG);
+
+    // Configure the rendering context.
+    renderer.resize(window.innerWidth*0.382, 200);
+    var context = renderer.getContext();
+    context.setFont("Arial", 10, "").setBackgroundFillStyle("#eed");
+
+    // Create a stave of width 400 at position 10, 40 on the canvas.
+    var stave = new VF.Stave(0, 40, window.innerWidth*0.382-20);
+
+    // Add a clef and time signature.
+    stave.addClef("treble");
+
+    // Connect it to the rendering context and draw!
+    stave.setContext(context).draw();
+
+
+    //var make = 
+    var params = makeVoice();
+    var notes = params[1];
+    var voice = params[0];
+
+
+
+    // Format and justify the notes to 400 pixels.
+    var formatter = new VF.Formatter().joinVoices([voice]).format([voice], window.innerWidth*0.382-50);
+
+    var beams = VF.Beam.generateBeams(notes);
+
+
+
+    // Render voice
+   voice.draw(context, stave);
+       beams.forEach(function(b) {b.setContext(context).draw()})
+
+}
+
+</script>
+
+
+
+<div id = "about" style = "display:none"class = "tab">Click on a melody to add it to the mating pool. Listen for the ones you like - tease out some form or another. It's done when you think it's done; then bounce it to midi and play it in your DAW, or render its notation to perform/inspect. <br><br><i>There is grandeur in this view of life, with its several powers, having been originally breathed into a few forms or into one; and that, whilst this planet has gone circling on according to the fixed law of gravity, from so simple a beginning endless forms most beautiful and most wonderful have been, and are being evolved.</i><br><br>-Darwin</div>
+
+
+<div id = "controls" class = "tab">
+
+  <button onClick = "nextGen()">next generation</button><br><br>
+
+  instrument:
+<select id="selected2" onchange="changeInstrument()">
+      <option selected value="flute">flute</option>
+      <option value="french_horn">horn</option>
+      <option value="violin">violin</option>
+      <option value="acoustic_grand_piano">piano</option>
+      <option value="voice_oohs">oohs</option>
+      <option value="choir_aahs">aahs</option>
+  </select><p id = "loading">loading...</p>
+
+
+  <button onClick = "reset()">reset</button>
+
+  <p id = "generations">generations: 0</p>
+
+
+
+  <input type="range" min="2" max="30" value="10" step="1" onchange="updatePop(this.value)"/>
+  <span id="range">population size: 10</span>
+<script type="text/javascript">
+function updatePop(newValue){
+            popmax = newValue;
+            population = new Population(mutationRate, popmax);
+            population.decode();
+            document.getElementById("range").innerHTML="population size: "+newValue;
+  }
+</script><br>
+
+
+
+
+<input type="range" min="0.0001" max="0.5" value="0.02" step="0.001" onMove = "updateMut(this.value)" onchange="updateMut(this.value)"/>
+  <span id="mut">mutation rate: 0.02</span>
+<script type="text/javascript">
+function updateMut(newValue){
+          mutationRate = newValue;
+            // notenum = newValue;
+            // //population = new Population(mutationRate, popmax);
+            //  population.decode();
+            document.getElementById("mut").innerHTML="mutation rate: "+newValue;
+  }
+</script>
+
+
+<br>
+
+
+
+<input type="range" min="2" max="30" value="9" step="1" onchange="updateLength(this.value)"/>
+  <span id="num">length: 9</span>
+<script type="text/javascript">
+function updateLength(newValue){
+            notenum = newValue;
+            //population = new Population(mutationRate, popmax);
+             population.decode();
+            document.getElementById("num").innerHTML="length: "+newValue;
+  }
+</script>
+
+
+
+
+
+
+
+<br>
+
+<input type="range" min="40" max="200" value="120" step="1" onchange = "updateBPM(this.value)"/>
+  <span id="bpm">tempo: 120</span>
+<script type="text/javascript">
+function updateBPM(newValue){
+          bpm = newValue;
+            // notenum = newValue;
+            // //population = new Population(mutationRate, popmax);
+            //  population.decode();
+            document.getElementById("bpm").innerHTML="tempo: "+newValue;
+  }
+</script>
+
+
+<br>
+
+
+
+
+
+<br>
+
+<form onchange = "toneTog(this.value)" name="tons">
+  <input type="radio" name="gender" value="modal" checked> modal<br>
+  <input type="radio" name="gender" value="chromatic"> chromatic<br>
+</form>
+<script type = "text/javascript">
+function toneTog(){
+  var rad = document.tons.gender;
+  //console.log(rad.value);
+  tonality = rad.value;
+  population.decode();
+}
+</script>
+
+
+
+
+<input type="checkbox" onchange = "monoCheck()" value="Bike"> monorhythmic<br>
+<script type = "text/javascript">
+function monoCheck(){
+  rlocktoggle = !rlocktoggle;
+  population.decode();  
+}
+</script>
+
+
+<input type="checkbox" onchange = "ioCheck()" value="Bike"> ionian lock<br>
+<script type = "text/javascript">
+function ioCheck(){
+  ilocktoggle = !ilocktoggle;
+  population.decode();  
+}
+</script>
+
+
+
+<br>
+<br>
+<button onClick = "bounce()">bounce selected to MIDI</button>
+
+
+
+
+</div>
+</div>
+
+
+
+</body>
+</html>
